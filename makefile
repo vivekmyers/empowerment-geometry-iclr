@@ -1,7 +1,12 @@
-name = $(HOME)/papers/2026-geom-emp/src_theory_paper
+~ = $(HOME)
+project = $~/papers/2026-geom-iclr
 slides = 
 
-all: $(shell perl hdeps.pl index.html)
+deps = $(shell perl hdeps.pl index.html)
+targets = $(patsubst $(project)/$2/%.$3,static/$1/%.$(or $4,$3),$(wildcard $(project)/$2/*.$3))
+
+all: $(deps) ;
+
 
 ifdef slides
 $(foreach idx,$(shell seq 1 $(words $(slides))), $(eval static/figures/$(word $(idx),$(slides)).pdf: build/slide$(idx).pdf))
@@ -27,20 +32,23 @@ static/videos/%.png: static/videos/%.mp4
 static/%.png: static/%.pdf
 	pdf2png $< $@
 
-static/figures/%: $(name)/figures/%
+static/figures/%: $(project)/figures/%
 	cp $< $@
 
-static/figures/%: $(name)/../figures/%
+static/figures/%: $(project)/../figures/%
 	cp $< $@
 
-static/figures/%: $(name)/figures/%
+static/figures/%: $(project)/figures/%
 	mkdir -p $(@D)
 	cp $< $@
 
-static/figures/%: $(name)/theory_final_figs/%
+
+$(call targets,figures,figures,pdf,svg): static/%: $(project)/%
+$(call targets,figures,figures,pdf,svg): static/%: $(project)/%
+$(call targets,figures,figures,pdf): static/%: $(project)/%
 	cp $< $@
 
-static/pdf/%: $(name)/../dist/%
+$(call targets,pdf,dist,pdf): static/pdf/%.pdf: $(project)/dist/%.pdf
 	cp $< $@
 
 build:
